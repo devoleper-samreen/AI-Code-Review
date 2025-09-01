@@ -42,14 +42,4 @@ passport.use(
   )
 );
 
-// Serialize / Deserialize
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  const user = await prisma.user.findUnique({ where: { id } });
-  done(null, user);
-});
-
 export default passport;
