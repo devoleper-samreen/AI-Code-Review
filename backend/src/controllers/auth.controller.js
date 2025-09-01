@@ -16,5 +16,5 @@ export const githubCallbackController = (req, res) => {
     httpOnly: true,
   });
 
-  res.redirect("/dashboard");
+  res.redirect("http://localhost:3000/dashboard");
 };
