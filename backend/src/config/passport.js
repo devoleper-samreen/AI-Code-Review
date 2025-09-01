@@ -24,6 +24,8 @@ passport.use(
               githubToken: accessToken,
             },
           });
+
+          console.log("user", user);
         } else {
           // update token if changed
           await prisma.user.update({
