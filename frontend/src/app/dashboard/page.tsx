@@ -1,11 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Github,
   GitPullRequest,
   CheckCircle,
   AlertTriangle,
   Settings,
+  PlusCircle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -42,6 +50,38 @@ const mockPRs = [
   },
 ];
 
+// Mock data for available GitHub repos to connect
+const mockAvailableRepos = [
+  {
+    id: 3,
+    name: "portfolio-site",
+    owner: "user",
+    description: "Personal portfolio website",
+    isConnected: false,
+  },
+  {
+    id: 4,
+    name: "ecommerce-app",
+    owner: "user",
+    description: "E-commerce platform with Next.js",
+    isConnected: false,
+  },
+  {
+    id: 5,
+    name: "task-manager",
+    owner: "user",
+    description: "Task management CLI tool",
+    isConnected: false,
+  },
+  {
+    id: 6,
+    name: "blog-backend",
+    owner: "user",
+    description: "REST API for blog platform",
+    isConnected: false,
+  },
+];
+
 export default async function Dashboard() {
   const session = true;
 
@@ -58,7 +98,6 @@ export default async function Dashboard() {
             <Link href="/dashboard" className="text-blue-400 font-semibold">
               Dashboard
             </Link>
-
             <Button variant="outline" size="icon" className="cursor-pointer">
               <Settings className="h-5 w-5 text-black cursor-pointer" />
             </Button>
@@ -98,10 +137,45 @@ export default async function Dashboard() {
             ))}
             <Card className="bg-gray-800 border-dashed border-2 border-gray-600 flex items-center justify-center">
               <CardContent>
-                <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
-                  <Github className="mr-2 h-5 w-5" />
-                  Connect New Repo
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+                      <PlusCircle className="mr-2 h-5 w-5" />
+                      Connect New Repo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl text-white">
+                        Select a Repository
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="max-h-[60vh] overflow-y-auto">
+                      {mockAvailableRepos.map((repo) => (
+                        <div
+                          key={repo.id}
+                          className="flex items-center justify-between p-4 border-b border-gray-700 hover:bg-gray-700 transition"
+                        >
+                          <div>
+                            <p className="font-semibold text-white">
+                              {repo.owner}/{repo.name}
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              {repo.description}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="bg-blue-600 hover:bg-blue-700 text-white border-none cursor-pointer"
+                            disabled={repo.isConnected}
+                          >
+                            {repo.isConnected ? "Connected" : "Connect"}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
           </div>
@@ -141,7 +215,9 @@ export default async function Dashboard() {
                         {pr.issues} Issues, {pr.suggestions} Suggestions
                       </p>
                       <Button variant="link" asChild className="text-blue-400">
-                        <Link href={`/dashboard/pr/${pr.id}`}>View Review</Link>
+                        <Link href={`/dashboard/PR-review/${pr.id}`}>
+                          View Review
+                        </Link>
                       </Button>
                     </div>
                   </div>
