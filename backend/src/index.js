@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import passport from "./config/passport.js";
 import authRoutes from "./routes/auth.routes.js";
 import reposRoute from "./routes/repo.route.js";
+import webhookRoute from "./routes/webhook.route.js";
 
 dotenv.config();
 const app = express();
@@ -15,6 +16,7 @@ app.use(passport.initialize());
 
 app.use("/auth", authRoutes);
 app.use("/repos", reposRoute);
+app.use("github", webhookRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
