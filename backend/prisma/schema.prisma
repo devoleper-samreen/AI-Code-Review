@@ -17,6 +17,7 @@ model User {
   avatarUrl String?
   githubToken String?
   createdAt DateTime @default(now())
+  repos       Repo[]
 }
 
 
@@ -27,7 +28,7 @@ model Repo {
   repoName   String   // "owner/repo" format
   webhookId  Int
   createdAt  DateTime @default(now())
-  prs       PR[]?
+  prs       PR[]
 }
 
 model PR {
