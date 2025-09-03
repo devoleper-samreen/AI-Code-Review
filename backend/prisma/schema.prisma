@@ -9,6 +9,7 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+
 model User {
   id        String   @id @default(cuid())
   githubId  String   @unique
@@ -16,5 +17,35 @@ model User {
   avatarUrl String?
   githubToken String?
   createdAt DateTime @default(now())
+}
+
+
+model Repo {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  repoName   String   // "owner/repo" format
+  webhookId  Int
+  createdAt  DateTime @default(now())
+  prs       PR[]?
+}
+
+model PR {
+  id         String   @id @default(cuid())
+  repo       Repo     @relation(fields: [repoId], references: [id])
+  repoId     String
+  prNumber   Int
+  status     String
+  createdAt  DateTime @default(now())
+  feedbacks  Feedback[]
+}
+
+
+model Feedback {
+  id          String   @id @default(cuid())
+  pr          PR       @relation(fields: [prId], references: [id])
+  prId        String
+  aiSuggestions Json
+  createdAt   DateTime @default(now())
 }
 
