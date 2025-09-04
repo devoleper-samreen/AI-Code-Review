@@ -1,11 +1,12 @@
 import { Worker } from "bullmq";
 import axios from "axios";
 import { analyzeDiff } from "../utils/ai.js";
-import { prisma } from "../prisma/client.js";
+import prisma from "../prisma/client.js";
 
 const worker = new Worker(
   "pr-review",
   async (job) => {
+    console.log("I am from worker");
     const { repoFullName, prNumber, diffUrl } = job.data;
 
     //fetch PR diff from github
@@ -14,12 +15,14 @@ const worker = new Worker(
     });
 
     const diff = diffResponse.data;
+    console.log("diff: ", diff);
 
     console.log(`🔍 Processing PR #${prNumber} from ${repoFullName}`);
 
     const feedback = await analyzeDiff(diff);
+    console.log("feedback: ", feedback);
 
-    const repo = await prisma.Repo.findFirst({
+    const repo = await prisma.repo.findFirst({
       where: { repoName: repoFullName },
     });
 
@@ -27,7 +30,7 @@ const worker = new Worker(
       throw new Error("Repo not found");
     }
 
-    const pr = await prisma.PR.findFirst({
+    const pr = await prisma.pR.findFirst({
       where: {
         repoId: repo.id,
         prNumber,
@@ -35,7 +38,7 @@ const worker = new Worker(
     });
 
     if (!pr) {
-      pr = await prisma.PR.create({
+      pr = await prisma.pR.create({
         data: {
           repoId: repo.id,
           prNumber,
@@ -44,7 +47,7 @@ const worker = new Worker(
       });
     }
 
-    await prisma.Feedback.create({
+    await prisma.feedback.create({
       data: {
         prId: pr.id,
         aiSuggestions: feedback,

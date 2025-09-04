@@ -28,7 +28,10 @@ export const getRepos = async (req, res) => {
 export const connectRepo = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { repo } = req.body;
+    const { full_name } = req.body;
+    console.log("repo log", full_name);
+
+    const repo = full_name;
 
     //Get user from DB for github token
     const user = await prisma.user.findUnique({ where: { id: userId } });

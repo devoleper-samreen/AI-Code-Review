@@ -11,7 +11,9 @@ router.get(
 
 router.get(
   "/github/callback",
-  passport.authenticate("github", { failureRedirect: "/login" }),
+  passport.authenticate("github", {
+    session: false,
+  }),
   githubCallbackController
 );
 

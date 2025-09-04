@@ -20,12 +20,20 @@ export const webhookPR = async (req, res) => {
       return res.status(200).send("Not a PR event");
     }
 
-    const payload = req.body;
+    const payload = JSON.parse(req.body.toString());
+
+    //const payload = req.body;
     const action = payload.action;
     const pr = payload.pull_request;
     const repo = payload.repository;
 
-    if (action === "opened" || action === "synchronize") {
+    console.log("👉 Received PR event:", action);
+
+    if (
+      action === "opened" ||
+      action === "reopened" ||
+      action === "synchronize"
+    ) {
       await prQueue.add("review-pr", {
         repoFullName: repo.full_name, // "owner/repo"
         prNumber: pr.number,
@@ -34,10 +42,12 @@ export const webhookPR = async (req, res) => {
         installationId: payload.installation?.id,
       });
 
-      res.status(200).send("Event received");
+      console.log("Event received and queued for processing");
     }
+
+    res.status(200).send("Event received");
   } catch (error) {
-    console.error(err);
+    console.error(error);
     res.status(500).send("Webhook handling failed");
   }
 };
