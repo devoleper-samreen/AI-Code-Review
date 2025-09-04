@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@langchain/google-genai": "^0.2.17",
     "@prisma/client": "^6.15.0",
     "axios": "^1.11.0",

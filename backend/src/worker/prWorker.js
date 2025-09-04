@@ -2,6 +2,7 @@ import { Worker } from "bullmq";
 import axios from "axios";
 import { analyzeDiff } from "../utils/ai.js";
 import prisma from "../prisma/client.js";
+import { formatFeedbackForComment } from "../utils/comment.js";
 
 const worker = new Worker(
   "pr-review",
@@ -55,6 +56,38 @@ const worker = new Worker(
     });
 
     console.log(`✅ Feedback saved for PR #${prNumber}`);
+
+    //AUTO Comment on PR
+    const commentBody = formatFeedbackForComment(feedback);
+
+    const { repoName } = repo;
+
+    const [owner, repoShortName] = repoName.split("/");
+
+    const user = await prisma.user.findFirst({ where: { username: owner } });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    try {
+      await axios.post(
+        `https://api.github.com/repos/${owner}/${repoShortName}/issues/${prNumber}/comments`,
+        { body: commentBody },
+        {
+          headers: {
+            Authorization: `token ${user.githubToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log(`✅ AI review comment posted to PR #${prNumber}`);
+    } catch (error) {
+      console.error(
+        `❌ Error posting AI review comment to PR #${prNumber}: ${error.message}`
+      );
+    }
   },
   {
     connection: { host: "127.0.0.1", port: 6379 },
