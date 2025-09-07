@@ -1,10 +1,5 @@
 import { verifySignature } from "../utils/verifySignature.js";
-import { Queue } from "bullmq";
-
-// BullMQ queue banayi
-const prQueue = new Queue("pr-review", {
-  connection: { host: "127.0.0.1", port: 6379 },
-});
+import { prQueue } from "../config/queues.js";
 
 export const webhookPR = async (req, res) => {
   try {
@@ -21,8 +16,6 @@ export const webhookPR = async (req, res) => {
     }
 
     const payload = JSON.parse(req.body.toString());
-
-    //const payload = req.body;
     const action = payload.action;
     const pr = payload.pull_request;
     const repo = payload.repository;

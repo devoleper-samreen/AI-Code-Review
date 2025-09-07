@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "dev:worker": "nodemon src/worker/prWorker.js"
+    "dev:PRworker": "nodemon src/worker/prWorker.js",
+    "dev:repoFetchingWorker": "nodemon src/worker/embeddingWorker.js"
   },
   "keywords": [],
   "author": "",
@@ -14,17 +15,16 @@
   "description": "",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@langchain/google-genai": "^0.2.17",
     "@prisma/client": "^6.15.0",
+    "@qdrant/js-client-rest": "^1.15.1",
     "axios": "^1.11.0",
-    "bullmq": "^5.58.4",
+    "bullmq": "^5.58.5",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
+    "dotenv": "^17.2.2",
     "express": "^5.1.0",
-    "express-session": "^1.18.2",
     "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
-    "langchain": "^0.3.32",
+    "p-limit": "^7.1.1",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "zod": "^3.25.76"

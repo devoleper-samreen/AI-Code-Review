@@ -1,5 +1,6 @@
 import prisma from "../prisma/client.js";
 import axios from "axios";
+import { embeddingQueue } from "../config/queues.js";
 export const getRepos = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -29,7 +30,6 @@ export const connectRepo = async (req, res) => {
   try {
     const userId = req.user.id;
     const { full_name } = req.body;
-    console.log("repo log", full_name);
 
     const repo = full_name;
 
@@ -45,13 +45,13 @@ export const connectRepo = async (req, res) => {
 
     const [owner, repoName] = repo.split("/");
 
-    //create webhook on github
+    //create webhook on github on this repo
     const response = await axios.post(
       `https://api.github.com/repos/${owner}/${repoName}/hooks`,
       {
         name: "web",
         active: true,
-        events: ["pull_request"],
+        events: ["pull_request", "push"],
         config: {
           url: `${process.env.WEBHOOK_URL}/github/webhook`,
           content_type: "json",
@@ -74,6 +74,15 @@ export const connectRepo = async (req, res) => {
         webhookId: response.data.id,
       },
     });
+
+    // Enqueue background job for embeddings
+    embeddingQueue.add("generate-embeddings", {
+      repoId: savedRepo.id,
+      repoName: full_name,
+      userId,
+    });
+
+    console.log("saved repo and enqueued processing...: ", savedRepo);
 
     return res.status(200).json({
       success: true,

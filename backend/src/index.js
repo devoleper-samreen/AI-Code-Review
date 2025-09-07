@@ -18,7 +18,6 @@ app.use("/github", express.raw({ type: "application/json" }), webhookRoute);
 app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/repos", reposRoute);
-//app.use("/github", webhookRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);

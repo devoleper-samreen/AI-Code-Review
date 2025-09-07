@@ -3,8 +3,6 @@ import jwt from "jsonwebtoken";
 export const verifyAuth = (req, res, next) => {
   let token = req.headers?.authorization || req.cookies?.token;
 
-  console.log(token);
-
   if (!token)
     return res.status(401).json({
       message: "Token is missing",

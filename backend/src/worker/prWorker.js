@@ -1,13 +1,12 @@
 import { Worker } from "bullmq";
 import axios from "axios";
-import { analyzeDiff } from "../utils/ai.js";
+import { analyzeDiffWithContext } from "../utils/analyzeAI.js";
 import prisma from "../prisma/client.js";
 import { formatFeedbackForComment } from "../utils/comment.js";
 
 const worker = new Worker(
   "pr-review",
   async (job) => {
-    console.log("I am from worker");
     const { repoFullName, prNumber, diffUrl } = job.data;
 
     //fetch PR diff from github
@@ -16,11 +15,11 @@ const worker = new Worker(
     });
 
     const diff = diffResponse.data;
-    console.log("diff: ", diff);
 
     console.log(`🔍 Processing PR #${prNumber} from ${repoFullName}`);
 
-    const feedback = await analyzeDiff(diff);
+    const feedback = await analyzeDiffWithContext(diff);
+
     console.log("feedback: ", feedback);
 
     const repo = await prisma.repo.findFirst({
@@ -57,7 +56,7 @@ const worker = new Worker(
 
     console.log(`✅ Feedback saved for PR #${prNumber}`);
 
-    //AUTO Comment on PR
+    //AUTO Comment on PR on Github
     const commentBody = formatFeedbackForComment(feedback);
 
     const { repoName } = repo;
@@ -85,7 +84,7 @@ const worker = new Worker(
       console.log(`✅ AI review comment posted to PR #${prNumber}`);
     } catch (error) {
       console.error(
-        `❌ Error posting AI review comment to PR #${prNumber}: ${error.message}`
+        `Error posting AI review comment to PR #${prNumber}: ${error.message}`
       );
     }
   },
