@@ -16,9 +16,8 @@ const worker = new Worker(
 
     const diff = diffResponse.data;
 
-    console.log("diff: ", diff);
-
     console.log(`🔍 Processing PR #${prNumber} from ${repoFullName}`);
+    console.log("diff: ", diff);
 
     const feedback = await analyzeDiffWithContext(diff);
 
@@ -28,16 +27,20 @@ const worker = new Worker(
       where: { repoName: repoFullName },
     });
 
+    console.log("repo: ", repo);
+
     if (!repo) {
       throw new Error("Repo not found");
     }
 
-    const pr = await prisma.pR.findFirst({
+    let pr = await prisma.pR.findFirst({
       where: {
         repoId: repo.id,
         prNumber,
       },
     });
+
+    console.log("pr: ", pr);
 
     if (!pr) {
       pr = await prisma.pR.create({
@@ -47,16 +50,29 @@ const worker = new Worker(
           status: "pending",
         },
       });
+
+      console.log("✅ PR created: ", pr);
     }
 
-    await prisma.feedback.create({
-      data: {
-        prId: pr.id,
-        aiSuggestions: feedback,
-      },
-    });
+    try {
+      await prisma.feedback.create({
+        data: {
+          prId: pr.id,
+          aiSuggestions: feedback,
+        },
+      });
+    } catch (error) {
+      console.error(
+        `Error saving feedback for PR #${prNumber}: ${error.message}`
+      );
+    }
 
     console.log(`✅ Feedback saved for PR #${prNumber}`);
+
+    await prisma.pR.update({
+      where: { id: pr.id },
+      data: { status: "reviewed" },
+    });
 
     //AUTO Comment on PR on Github
     const commentBody = formatFeedbackForComment(feedback);

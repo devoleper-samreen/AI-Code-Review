@@ -44,8 +44,5 @@ export const getEmbedding = async (text) => {
   const result = await embeddingModel.embedContent({
     content: { parts: [{ text }] },
   });
-
-  console.log("embeddings result", result);
-
   return result.embedding.values || [];
 };

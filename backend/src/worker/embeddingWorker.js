@@ -23,7 +23,6 @@ const embeddingWorker = new Worker(
     if (!user?.githubToken) throw new Error("GitHub token not found");
 
     const files = await fetchRepoFiles(owner, repoShortName, user.githubToken);
-    console.log("files", files);
 
     if (files.length === 0) return;
 

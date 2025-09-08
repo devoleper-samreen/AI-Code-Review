@@ -18,8 +18,6 @@ const prReviewChain = {
       (d) => d.payload.text || d.payload.content || ""
     );
 
-    console.log("contextChunks", contextChunks);
-
     // 3. Prompt + context Gemini ko bhejo
     const result = await geminiModel.generateContent(
       `
@@ -32,7 +30,7 @@ const prReviewChain = {
       `
     );
 
-    return { repo_context: result.response.text() };
+    return { AIFeedback: result.response.text() };
   },
 };
 
@@ -107,7 +105,7 @@ Return JSON in this format:
 
   try {
     const result = await prReviewChain.call({ input: prompt, diff });
-    const rawText = result.repo_context.replace(/```json|```/g, "").trim();
+    const rawText = result.AIFeedback.replace(/```json|```/g, "").trim();
 
     let parsed;
     try {
