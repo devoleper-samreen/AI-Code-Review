@@ -16,6 +16,8 @@ const worker = new Worker(
 
     const diff = diffResponse.data;
 
+    console.log("diff: ", diff);
+
     console.log(`🔍 Processing PR #${prNumber} from ${repoFullName}`);
 
     const feedback = await analyzeDiffWithContext(diff);

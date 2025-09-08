@@ -1,27 +1,38 @@
 import { z } from "zod";
 import { qdrant } from "../config/vectorDB.js";
 import { geminiModel } from "../config/gemini.js";
+import { getEmbedding } from "../utils/embeddingWorkerHelper.js";
 
-// 🔹 Custom chain
 const prReviewChain = {
-  call: async ({ input }) => {
-    // fetch top-k docs from Qdrant
-    const searchResult = await qdrant.search({
-      collection_name: "repo_embeddings",
-      vector: [], // placeholder if you don't have an embedding yet
+  call: async ({ input, diff }) => {
+    // 1. Diff ka embedding banao
+    const diffEmbedding = await getEmbedding(diff);
+
+    // 2. Qdrant se top-k related context fetch karo
+    const searchResult = await qdrant.search("repo_embeddings", {
+      vector: diffEmbedding,
       limit: 5,
     });
 
     const contextChunks = searchResult.map(
-      (d) => d.payload.pageContent || d.payload.content || ""
+      (d) => d.payload.text || d.payload.content || ""
     );
 
-    // send prompt + context to Gemini
+    console.log("contextChunks", contextChunks);
+
+    // 3. Prompt + context Gemini ko bhejo
     const result = await geminiModel.generateContent(
-      `${input}\n\nRepo Context:\n${contextChunks.join("\n\n")}`
+      `
+      ${input}\n\n
+      I am providing you repo contex used to analyze this PR.
+      you have to review only diff and not the context be careful.
+      you can use contex as a reference if needed.
+      Repo Context:\n
+      ${contextChunks.join("\n\n")}
+      `
     );
 
-    return { output_text: result.response.text() };
+    return { repo_context: result.response.text() };
   },
 };
 
@@ -50,13 +61,53 @@ const FeedbackSchema = z.object({
   general_feedback: z.array(z.string()).optional(),
 });
 
-const prompt = `You are an experienced senior software engineer and code reviewer AI. Analyze this GitHub Pull Request diff and return detailed, actionable feedback in valid JSON only. PR Diff: ${diff}`;
-
 // 🔹 Main function
 export const analyzeDiffWithContext = async (diff) => {
+  const prompt = `
+You are an experienced **senior software engineer and code reviewer AI**.
+Your job is to analyze the following GitHub Pull Request diff and return **actionable feedback** ONLY in valid JSON.
+
+Guidelines for feedback:
+- Be **specific**: mention exact files, functions, or lines if possible.
+- Be **actionable**: explain WHAT should be fixed/optimized and WHY.
+- Be **professional**: keep tone constructive and helpful (like a senior mentor).
+- Be **prioritized**: critical bugs first, then optimizations, then minor improvements.
+- Keep responses **concise but insightful** (no filler).
+
+PR Diff:
+${diff}
+
+Return JSON in this format:
+{
+  "bugs": [
+    {
+      "title": "Bug summary in one line",
+      "details": "Clear explanation of the bug, why it's an issue, and suggested fix",
+      "severity": "critical | high | medium | low"
+    }
+  ],
+  "optimizations": [
+    {
+      "title": "Optimization summary",
+      "details": "What can be optimized and why it matters (performance, readability, maintainability)"
+    }
+  ],
+  "security_issues": [
+    {
+      "title": "Security issue summary",
+      "details": "What the vulnerability is, how it could be exploited, and how to fix it",
+      "severity": "high | medium | low"
+    }
+  ],
+  "general_feedback": [
+    "High-level suggestions about code style, documentation, or best practices"
+  ]
+}
+`;
+
   try {
-    const result = await prReviewChain.call({ input: prompt });
-    const rawText = result.output_text.replace(/```json|```/g, "").trim();
+    const result = await prReviewChain.call({ input: prompt, diff });
+    const rawText = result.repo_context.replace(/```json|```/g, "").trim();
 
     let parsed;
     try {
@@ -73,7 +124,7 @@ export const analyzeDiffWithContext = async (diff) => {
 
     return parsed;
   } catch (err) {
-    console.error("analyzeDiff crashed:", err);
+    console.error("analyzeDiffWithContext crashed:", err);
     return {
       bugs: [],
       optimizations: [],

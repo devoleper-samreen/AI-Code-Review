@@ -38,6 +38,14 @@ export const splitText = (text, chunkSize = 1000, chunkOverlap = 100) => {
 };
 
 export const getEmbedding = async (text) => {
-  const result = await embeddingModel.embedContent(text);
+  if (!text || text.trim().length === 0) {
+    return []; // fallback empty vector
+  }
+  const result = await embeddingModel.embedContent({
+    content: { parts: [{ text }] },
+  });
+
+  console.log("embeddings result", result);
+
   return result.embedding.values || [];
 };
