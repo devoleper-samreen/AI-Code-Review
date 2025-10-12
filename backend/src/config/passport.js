@@ -1,6 +1,9 @@
 import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import prisma from "../prisma/client.js";
+import dotenv from "dotenv"
+dotenv.config()
+
 
 passport.use(
   new GitHubStrategy(

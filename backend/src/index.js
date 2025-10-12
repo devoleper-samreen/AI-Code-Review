@@ -6,7 +6,8 @@ import authRoutes from "./routes/auth.routes.js";
 import reposRoute from "./routes/repo.route.js";
 import webhookRoute from "./routes/webhook.route.js";
 
-dotenv.config();
+
+dotenv.config()
 const app = express();
 const PORT = process.env.PORT || 5000;
 
