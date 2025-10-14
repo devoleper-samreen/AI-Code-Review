@@ -9,7 +9,6 @@ import {
   User,
   LogOut,
   Github,
-  Mail,
   Calendar,
   Shield,
   Bell,
@@ -64,10 +63,15 @@ export default function SettingsClient() {
     router.push("/");
   };
 
-  const handleDeleteAccount = () => {
-    // TODO: Implement account deletion API
-    localStorage.removeItem("token");
-    router.push("/");
+  const handleDeleteAccount = async () => {
+    try {
+      await authAPI.deleteAccount();
+      localStorage.removeItem("token");
+      router.push("/");
+    } catch (error: any) {
+      console.error("Failed to delete account:", error);
+      alert("Failed to delete account. Please try again.");
+    }
   };
 
   if (loading) {
@@ -163,13 +167,6 @@ export default function SettingsClient() {
                 </div>
                 <span className="text-gray-900 font-semibold">@{userInfo.username}</span>
               </div>
-              <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                  <User className="w-5 h-5 text-gray-500" />
-                  <span className="text-gray-600 font-medium">GitHub ID</span>
-                </div>
-                <span className="text-gray-900 font-semibold">{userInfo.githubId}</span>
-              </div>
               {userInfo.avatarUrl && (
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
                   <div className="flex items-center gap-3">
@@ -183,6 +180,13 @@ export default function SettingsClient() {
                   />
                 </div>
               )}
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <User className="w-5 h-5 text-gray-500" />
+                  <span className="text-gray-600 font-medium">GitHub ID</span>
+                </div>
+                <span className="text-gray-900 font-semibold">{userInfo.githubId}</span>
+              </div>
               <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3">
                   <Calendar className="w-5 h-5 text-gray-500" />
@@ -205,26 +209,15 @@ export default function SettingsClient() {
                 Notifications
               </CardTitle>
               <CardDescription className="text-gray-600">
-                Manage how you receive notifications
+                Manage your notification preferences
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                <div>
-                  <p className="text-gray-900 font-medium">PR Review Notifications</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Get notified when a PR review is completed
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" className="border-gray-300">
-                  Coming Soon
-                </Button>
-              </div>
               <div className="flex items-center justify-between py-3">
                 <div>
-                  <p className="text-gray-900 font-medium">Email Notifications</p>
+                  <p className="text-gray-900 font-medium">In-App Notifications</p>
                   <p className="text-sm text-gray-600 mt-1">
-                    Receive email updates about your repositories
+                    Get notified in the app when PR reviews are completed
                   </p>
                 </div>
                 <Button variant="outline" size="sm" className="border-gray-300">

@@ -19,6 +19,8 @@ import {
   ExternalLink,
   Trash2,
   RefreshCw,
+  Filter,
+  ArrowUpDown,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -63,7 +65,10 @@ export default function RepoDetailClient({ id }: Props) {
   const [disconnecting, setDisconnecting] = useState(false);
   const [repoData, setRepoData] = useState<RepoData | null>(null);
   const [prReviews, setPRReviews] = useState<PRReview[]>([]);
+  const [filteredPRs, setFilteredPRs] = useState<PRReview[]>([]);
   const [userInfo, setUserInfo] = useState<any>(null);
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("date-desc");
   const [stats, setStats] = useState({
     total: 0,
     reviewed: 0,
@@ -74,6 +79,10 @@ export default function RepoDetailClient({ id }: Props) {
   useEffect(() => {
     fetchRepoData();
   }, [id]);
+
+  useEffect(() => {
+    applyFiltersAndSort();
+  }, [prReviews, filterStatus, sortBy]);
 
   const fetchRepoData = async (isRefresh = false) => {
     try {
@@ -169,6 +178,33 @@ export default function RepoDetailClient({ id }: Props) {
 
   const handleRefresh = () => {
     fetchRepoData(true);
+  };
+
+  const applyFiltersAndSort = () => {
+    let filtered = [...prReviews];
+
+    // Apply status filter
+    if (filterStatus !== "all") {
+      filtered = filtered.filter((pr) => pr.status === filterStatus);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "date-desc":
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case "date-asc":
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case "pr-number-desc":
+          return b.prNumber - a.prNumber;
+        case "pr-number-asc":
+          return a.prNumber - b.prNumber;
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredPRs(filtered);
   };
 
   if (loading) {
@@ -466,15 +502,48 @@ export default function RepoDetailClient({ id }: Props) {
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Pull Requests</h2>
-            <Button
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="border-gray-300 hover:border-gray-400"
-            >
-              <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-              {refreshing ? "Refreshing..." : "Refresh"}
-            </Button>
+            <div className="flex items-center gap-3">
+              {/* Filter Dropdown */}
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-600" />
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="all">All Status</option>
+                  <option value="reviewed">Reviewed</option>
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                </select>
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="h-4 w-4 text-gray-600" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="date-desc">Newest First</option>
+                  <option value="date-asc">Oldest First</option>
+                  <option value="pr-number-desc">PR# High to Low</option>
+                  <option value="pr-number-asc">PR# Low to High</option>
+                </select>
+              </div>
+
+              {/* Refresh Button */}
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="border-gray-300 hover:border-gray-400"
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+                {refreshing ? "Refreshing..." : "Refresh"}
+              </Button>
+            </div>
           </div>
           <Card className="bg-white border-gray-200 shadow-sm">
             <CardContent className="p-0">
@@ -501,9 +570,29 @@ export default function RepoDetailClient({ id }: Props) {
                     </a>
                   </Button>
                 </div>
+              ) : filteredPRs.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Filter className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No matching pull requests
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Try adjusting your filters to see more results
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setFilterStatus("all");
+                      setSortBy("date-desc");
+                    }}
+                    className="border-gray-300 hover:border-gray-400"
+                  >
+                    Reset Filters
+                  </Button>
+                </div>
               ) : (
                 <div className="divide-y divide-gray-200">
-                  {prReviews.map((pr) => (
+                  {filteredPRs.map((pr) => (
                     <div
                       key={pr.id}
                       className="flex items-center justify-between p-5 hover:bg-gray-50 transition-colors"

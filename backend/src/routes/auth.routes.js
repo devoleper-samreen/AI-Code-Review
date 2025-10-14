@@ -1,6 +1,6 @@
 import { Router } from "express";
 import passport from "passport";
-import { githubCallbackController, getCurrentUser } from "../controllers/auth.controller.js";
+import { githubCallbackController, getCurrentUser, deleteAccount } from "../controllers/auth.controller.js";
 import { verifyAuth } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -19,5 +19,6 @@ router.get(
 );
 
 router.get("/me", verifyAuth, getCurrentUser);
+router.delete("/account", verifyAuth, deleteAccount);
 
 export default router;

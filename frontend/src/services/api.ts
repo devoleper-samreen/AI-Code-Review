@@ -38,6 +38,11 @@ export const authAPI = {
     const response = await AxiosInstance.get("/auth/me");
     return response.data;
   },
+
+  deleteAccount: async (): Promise<{ success: boolean; message: string }> => {
+    const response = await AxiosInstance.delete("/auth/account");
+    return response.data;
+  },
 };
 
 // Repository APIs
