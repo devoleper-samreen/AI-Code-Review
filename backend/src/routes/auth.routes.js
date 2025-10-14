@@ -1,6 +1,7 @@
 import { Router } from "express";
 import passport from "passport";
-import { githubCallbackController } from "../controllers/auth.controller.js";
+import { githubCallbackController, getCurrentUser } from "../controllers/auth.controller.js";
+import { verifyAuth } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
@@ -16,5 +17,7 @@ router.get(
   }),
   githubCallbackController
 );
+
+router.get("/me", verifyAuth, getCurrentUser);
 
 export default router;
