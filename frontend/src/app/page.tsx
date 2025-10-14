@@ -1,8 +1,18 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Github, Code, CheckCircle, AlertTriangle, Zap, Star, Users, Shield, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navbar */}
@@ -16,23 +26,28 @@ export default function Home() {
               CodeAI Review
             </span>
           </div>
-          <div className="flex items-center gap-6">
-            <Link href="#features" className="text-gray-600 hover:text-gray-900 font-medium transition">
-              Features
-            </Link>
-            <Link href="#pricing" className="text-gray-600 hover:text-gray-900 font-medium transition">
-              Pricing
-            </Link>
-            <Button variant="ghost" asChild className="text-gray-700 hover:text-gray-900">
-              <Link href="/signup">
-                Sign In
-              </Link>
-            </Button>
-            <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
-              <Link href="/signup">
-                Get Started Free
-              </Link>
-            </Button>
+          <div className="flex items-center gap-4">
+            {isAuthenticated ? (
+              <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
+                <Link href="/dashboard">
+                  Go to Dashboard
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" asChild className="text-gray-700 hover:text-gray-900">
+                  <Link href="/signup">
+                    Sign In
+                  </Link>
+                </Button>
+                <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
+                  <Link href="/signup">
+                    Get Started Free
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -57,16 +72,28 @@ export default function Home() {
               catch bugs early, and maintain code quality across your team.
             </p>
             <div className="flex items-center justify-center gap-4">
-              <Link href="/signup">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-6 rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                >
-                  <Github className="mr-2 h-5 w-5" />
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <Link href="/dashboard">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-6 rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    Go to Dashboard
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/signup">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-6 rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    <Github className="mr-2 h-5 w-5" />
+                    Start Free Trial
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
               <Button
                 size="lg"
                 variant="outline"
@@ -261,18 +288,32 @@ export default function Home() {
           <p className="text-xl text-blue-100 mb-10">
             Join thousands of developers shipping better code with AI-powered reviews.
           </p>
-          <Link href="/signup">
-            <Button
-              size="lg"
-              className="bg-white text-blue-600 hover:bg-gray-100 font-bold px-10 py-6 rounded-xl text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
-            >
-              Start Free Trial
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-          <p className="text-blue-100 mt-6">
-            No credit card required • 14-day free trial • Cancel anytime
-          </p>
+          {isAuthenticated ? (
+            <Link href="/dashboard">
+              <Button
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-gray-100 font-bold px-10 py-6 rounded-xl text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+              >
+                Go to Dashboard
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/signup">
+              <Button
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-gray-100 font-bold px-10 py-6 rounded-xl text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+              >
+                Start Free Trial
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          )}
+          {!isAuthenticated && (
+            <p className="text-blue-100 mt-6">
+              No credit card required • 14-day free trial • Cancel anytime
+            </p>
+          )}
         </div>
       </section>
 
