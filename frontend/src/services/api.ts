@@ -88,3 +88,11 @@ export const prAPI = {
     return response.data;
   },
 };
+
+// Analytics APIs
+export const analyticsAPI = {
+  getAnalytics: async () => {
+    const response = await AxiosInstance.get("/analytics");
+    return response.data;
+  },
+};

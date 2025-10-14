@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.routes.js";
 import reposRoute from "./routes/repo.route.js";
 import webhookRoute from "./routes/webhook.route.js";
 import prRoute from "./routes/pr.route.js";
+import analyticsRoute from "./routes/analytics.route.js";
 
 
 dotenv.config()
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/repos", reposRoute);
 app.use("/reviews", prRoute);
+app.use("/analytics", analyticsRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
