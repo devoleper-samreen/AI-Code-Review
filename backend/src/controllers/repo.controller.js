@@ -124,3 +124,124 @@ export const getConnectedRepos = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch connected repos" });
   }
 };
+
+export const getRepoById = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const repo = await prisma.repo.findFirst({
+      where: {
+        id,
+        userId,
+      },
+      include: {
+        _count: {
+          select: { prs: true },
+        },
+      },
+    });
+
+    if (!repo) {
+      return res.status(404).json({
+        success: false,
+        error: "Repository not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      repo: {
+        ...repo,
+        prCount: repo._count.prs,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch repository" });
+  }
+};
+
+export const disconnectRepo = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    // Get repo from DB
+    const repo = await prisma.repo.findFirst({
+      where: {
+        id,
+        userId,
+      },
+    });
+
+    if (!repo) {
+      return res.status(404).json({
+        success: false,
+        message: "Repository not found",
+      });
+    }
+
+    // Get user for GitHub token
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || !user.githubToken) {
+      return res.status(401).json({
+        success: false,
+        message: "GitHub token not found",
+      });
+    }
+
+    const [owner, repoName] = repo.repoName.split("/");
+
+    // Delete webhook from GitHub
+    try {
+      await axios.delete(
+        `https://api.github.com/repos/${owner}/${repoName}/hooks/${repo.webhookId}`,
+        {
+          headers: {
+            Authorization: `token ${user.githubToken}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.warn("Failed to delete webhook from GitHub:", error.message);
+      // Continue anyway to delete from DB
+    }
+
+    // Get all PRs for this repo to delete their feedbacks first
+    const prs = await prisma.pR.findMany({
+      where: { repoId: id },
+      select: { id: true },
+    });
+
+    // Delete all feedbacks for these PRs
+    if (prs.length > 0) {
+      const prIds = prs.map((pr) => pr.id);
+      await prisma.feedback.deleteMany({
+        where: { prId: { in: prIds } },
+      });
+
+      // Delete all PRs for this repo
+      await prisma.pR.deleteMany({
+        where: { repoId: id },
+      });
+    }
+
+    // Finally delete the repo
+    await prisma.repo.delete({
+      where: { id },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Repository disconnected successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to disconnect repository",
+    });
+  }
+};

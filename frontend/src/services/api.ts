@@ -58,6 +58,16 @@ export const repoAPI = {
     const response = await AxiosInstance.get("/repos/connected");
     return response.data;
   },
+
+  getRepoById: async (id: string): Promise<{ success: boolean; repo: ConnectedRepo }> => {
+    const response = await AxiosInstance.get(`/repos/${id}`);
+    return response.data;
+  },
+
+  disconnectRepo: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await AxiosInstance.delete(`/repos/${id}`);
+    return response.data;
+  },
 };
 
 // PR Review APIs
