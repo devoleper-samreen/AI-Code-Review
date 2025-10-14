@@ -165,9 +165,12 @@ export default function DashboardClient() {
             </div>
             <span className="text-2xl font-bold text-gray-900">CodeAI Review</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <Link href="/dashboard" className="text-blue-600 font-semibold">
               Dashboard
+            </Link>
+            <Link href="/dashboard/analytics" className="text-gray-700 hover:text-gray-900 font-medium transition">
+              Analytics
             </Link>
             {userInfo?.avatarUrl && (
               <Link href="/dashboard/settings" title="Settings">
