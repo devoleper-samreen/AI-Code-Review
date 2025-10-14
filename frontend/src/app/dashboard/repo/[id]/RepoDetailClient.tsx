@@ -440,7 +440,7 @@ export default function RepoDetailClient({ id }: Props) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Settings className="mr-2 h-4 w-4" />
+                  <ExternalLink className="mr-2 h-4 w-4" />
                   Webhook Settings
                 </a>
               </Button>
