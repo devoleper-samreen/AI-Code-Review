@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CodeAI Review - AI-Powered Code Review Platform",
+  title: "CodeReviewHub - AI-Powered Code Review Platform",
   description: "Automate code reviews with AI. Get instant feedback on pull requests, catch bugs early, and maintain code quality across your team.",
   keywords: ["code review", "AI", "GitHub", "pull requests", "automation", "code quality"],
 };

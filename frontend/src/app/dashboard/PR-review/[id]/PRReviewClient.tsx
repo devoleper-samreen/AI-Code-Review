@@ -136,12 +136,12 @@ export default function PRReviewClient({ id }: Props) {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
             <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-xl">
               <Code className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">CodeAI Review</span>
-          </div>
+            <span className="text-2xl font-bold text-gray-900">CodeReviewHub</span>
+          </Link>
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="text-gray-700 hover:text-gray-900 font-medium transition">
               Dashboard

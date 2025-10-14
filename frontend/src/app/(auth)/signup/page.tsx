@@ -18,7 +18,7 @@ export default function LoginPage() {
               <Code className="w-8 h-8 text-white" />
             </div>
             <span className="text-3xl font-bold text-gray-900">
-              CodeAI Review
+              CodeReviewHub
             </span>
           </div>
 
@@ -74,7 +74,7 @@ export default function LoginPage() {
               <Code className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold text-gray-900">
-              CodeAI Review
+              CodeReviewHub
             </span>
           </div>
 
@@ -127,7 +127,7 @@ export default function LoginPage() {
 
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
             <p className="text-sm text-gray-600">
-              New to CodeAI Review?{" "}
+              New to CodeReviewHub?{" "}
               <Link href="/" className="text-blue-600 hover:text-blue-700 font-semibold">
                 Learn more
               </Link>

@@ -23,7 +23,7 @@ export default function Home() {
               <Code className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              CodeAI Review
+              CodeReviewHub
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -326,7 +326,7 @@ export default function Home() {
                 <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-lg">
                   <Code className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900">CodeAI Review</span>
+                <span className="text-xl font-bold text-gray-900">CodeReviewHub</span>
               </div>
               <p className="text-gray-600 text-sm">
                 AI-powered code review platform for modern development teams.
@@ -365,7 +365,7 @@ export default function Home() {
 
           <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-600 text-sm">
-              &copy; 2025 CodeAI Review. All rights reserved.
+              &copy; 2025 CodeReviewHub. All rights reserved.
             </p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <Link href="#" className="text-gray-600 hover:text-gray-900">
