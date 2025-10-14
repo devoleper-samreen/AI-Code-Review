@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { prAPI } from "@/services/api";
+import { prAPI, authAPI } from "@/services/api";
 
 interface Props {
   id: string;
@@ -35,6 +35,7 @@ export default function PRReviewClient({ id }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [prData, setPRData] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
 
   useEffect(() => {
     fetchPRReview();
@@ -43,8 +44,14 @@ export default function PRReviewClient({ id }: Props) {
   const fetchPRReview = async () => {
     try {
       setLoading(true);
-      const response = await prAPI.getPRReviewById(id);
-      setPRData(response.review);
+      const [prRes, userRes] = await Promise.all([
+        prAPI.getPRReviewById(id),
+        authAPI.getCurrentUser(),
+      ]);
+      setPRData(prRes.review);
+      if (userRes.success && userRes.user) {
+        setUserInfo(userRes.user);
+      }
     } catch (error: any) {
       console.error("Failed to fetch PR review:", error);
       if (error.response?.status === 401) {
@@ -139,9 +146,15 @@ export default function PRReviewClient({ id }: Props) {
             <Link href="/dashboard" className="text-gray-700 hover:text-gray-900 font-medium transition">
               Dashboard
             </Link>
-            <Button variant="outline" size="icon" className="border-gray-300">
-              <Github className="h-5 w-5 text-gray-700" />
-            </Button>
+            {userInfo?.avatarUrl && (
+              <Link href="/dashboard/settings" title="Settings">
+                <img
+                  src={userInfo.avatarUrl}
+                  alt="User Avatar"
+                  className="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-blue-500 transition-colors cursor-pointer"
+                />
+              </Link>
+            )}
           </div>
         </div>
       </nav>

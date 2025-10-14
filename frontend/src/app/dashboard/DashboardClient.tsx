@@ -15,7 +15,6 @@ import {
   GitPullRequest,
   CheckCircle,
   AlertTriangle,
-  Settings,
   PlusCircle,
   Loader2,
   Code,
@@ -24,7 +23,7 @@ import {
   Activity,
 } from "lucide-react";
 import Link from "next/link";
-import { repoAPI, prAPI } from "@/services/api";
+import { repoAPI, prAPI, authAPI } from "@/services/api";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface ConnectedRepo {
@@ -64,7 +63,7 @@ export default function DashboardClient() {
   const [reposLoading, setReposLoading] = useState(false);
   const [connectingRepo, setConnectingRepo] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [username, setUsername] = useState("Developer");
+  const [userInfo, setUserInfo] = useState<any>(null);
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -81,13 +80,17 @@ export default function DashboardClient() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [connectedReposRes, prReviewsRes] = await Promise.all([
+      const [connectedReposRes, prReviewsRes, userRes] = await Promise.all([
         repoAPI.getConnectedRepos(),
         prAPI.getPRReviews(),
+        authAPI.getCurrentUser(),
       ]);
 
       setConnectedRepos(connectedReposRes.repos);
       setPRReviews(prReviewsRes.reviews);
+      if (userRes.success && userRes.user) {
+        setUserInfo(userRes.user);
+      }
     } catch (error: any) {
       console.error("Failed to fetch dashboard data:", error);
       if (error.response?.status === 401) {
@@ -162,13 +165,19 @@ export default function DashboardClient() {
             </div>
             <span className="text-2xl font-bold text-gray-900">CodeAI Review</span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <Link href="/dashboard" className="text-blue-600 font-semibold">
               Dashboard
             </Link>
-            <Button variant="outline" size="icon" className="border-gray-300 hover:border-gray-400">
-              <Settings className="h-5 w-5 text-gray-700" />
-            </Button>
+            {userInfo?.avatarUrl && (
+              <Link href="/dashboard/settings" title="Settings">
+                <img
+                  src={userInfo.avatarUrl}
+                  alt="User Avatar"
+                  className="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-blue-500 transition-colors cursor-pointer"
+                />
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -178,7 +187,7 @@ export default function DashboardClient() {
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Welcome back, {username}!
+            Welcome back, {userInfo?.username || "Developer"}!
           </h1>
           <p className="text-gray-600 text-lg">
             Manage your repositories and review pull requests

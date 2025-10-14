@@ -8,7 +8,6 @@ import {
   GitPullRequest,
   CheckCircle,
   AlertTriangle,
-  Settings,
   Loader2,
   Code,
   ArrowLeft,
@@ -23,7 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { repoAPI, prAPI } from "@/services/api";
+import { repoAPI, prAPI, authAPI } from "@/services/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,6 +63,7 @@ export default function RepoDetailClient({ id }: Props) {
   const [disconnecting, setDisconnecting] = useState(false);
   const [repoData, setRepoData] = useState<RepoData | null>(null);
   const [prReviews, setPRReviews] = useState<PRReview[]>([]);
+  const [userInfo, setUserInfo] = useState<any>(null);
   const [stats, setStats] = useState({
     total: 0,
     reviewed: 0,
@@ -84,7 +84,11 @@ export default function RepoDetailClient({ id }: Props) {
       }
 
       // Use the new getRepoById API
-      const repoRes = await repoAPI.getRepoById(id);
+      const [repoRes, prReviewsRes, userRes] = await Promise.all([
+        repoAPI.getRepoById(id),
+        prAPI.getPRReviews(),
+        authAPI.getCurrentUser(),
+      ]);
 
       if (!repoRes.success || !repoRes.repo) {
         router.push("/dashboard");
@@ -92,9 +96,11 @@ export default function RepoDetailClient({ id }: Props) {
       }
 
       setRepoData(repoRes.repo);
+      if (userRes.success && userRes.user) {
+        setUserInfo(userRes.user);
+      }
 
       // Get PR reviews for this repo
-      const prReviewsRes = await prAPI.getPRReviews();
       const repoReviews = prReviewsRes.reviews.filter(
         (pr: any) => pr.repoName === repoRes.repo.repoName
       );
@@ -206,13 +212,19 @@ export default function RepoDetailClient({ id }: Props) {
             </div>
             <span className="text-2xl font-bold text-gray-900">CodeAI Review</span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <Link href="/dashboard" className="text-gray-700 hover:text-gray-900 font-medium transition">
               Dashboard
             </Link>
-            <Button variant="outline" size="icon" className="border-gray-300 hover:border-gray-400">
-              <Settings className="h-5 w-5 text-gray-700" />
-            </Button>
+            {userInfo?.avatarUrl && (
+              <Link href="/dashboard/settings" title="Settings">
+                <img
+                  src={userInfo.avatarUrl}
+                  alt="User Avatar"
+                  className="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-blue-500 transition-colors cursor-pointer"
+                />
+              </Link>
+            )}
           </div>
         </div>
       </nav>
