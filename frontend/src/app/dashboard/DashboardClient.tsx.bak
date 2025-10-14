@@ -1,0 +1,319 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Github,
+  GitPullRequest,
+  CheckCircle,
+  AlertTriangle,
+  Settings,
+  PlusCircle,
+  Loader2,
+} from "lucide-react";
+import Link from "next/link";
+import { repoAPI, prAPI } from "@/services/api";
+import { useRouter, useSearchParams } from "next/navigation";
+
+interface ConnectedRepo {
+  id: string;
+  repoName: string;
+  prCount: number;
+  createdAt: string;
+}
+
+interface AvailableRepo {
+  id: number;
+  name: string;
+  full_name: string;
+  owner: {
+    login: string;
+  };
+  description: string | null;
+  private: boolean;
+}
+
+interface PRReview {
+  id: string;
+  prNumber: number;
+  repoName: string;
+  status: string;
+  createdAt: string;
+  feedback: any;
+}
+
+export default function DashboardClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [connectedRepos, setConnectedRepos] = useState<ConnectedRepo[]>([]);
+  const [availableRepos, setAvailableRepos] = useState<AvailableRepo[]>([]);
+  const [prReviews, setPRReviews] = useState<PRReview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reposLoading, setReposLoading] = useState(false);
+  const [connectingRepo, setConnectingRepo] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [username, setUsername] = useState("Developer");
+
+  useEffect(() => {
+    // Handle token from OAuth redirect
+    const token = searchParams.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      // Clean URL
+      router.replace("/dashboard");
+    }
+  }, [searchParams, router]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [connectedReposRes, prReviewsRes] = await Promise.all([
+        repoAPI.getConnectedRepos(),
+        prAPI.getPRReviews(),
+      ]);
+
+      setConnectedRepos(connectedReposRes.repos);
+      setPRReviews(prReviewsRes.reviews);
+    } catch (error: any) {
+      console.error("Failed to fetch dashboard data:", error);
+      if (error.response?.status === 401) {
+        router.push("/signup");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAvailableRepos = async () => {
+    try {
+      setReposLoading(true);
+      const response = await repoAPI.getRepos();
+
+      // Filter out already connected repos
+      const connectedRepoNames = new Set(connectedRepos.map(r => r.repoName));
+      const available = response.repos.filter(
+        repo => !connectedRepoNames.has(repo.full_name)
+      );
+
+      setAvailableRepos(available);
+    } catch (error) {
+      console.error("Failed to fetch repos:", error);
+    } finally {
+      setReposLoading(false);
+    }
+  };
+
+  const handleConnectRepo = async (full_name: string) => {
+    try {
+      setConnectingRepo(full_name);
+      const response = await repoAPI.connectRepo(full_name);
+
+      if (response.success) {
+        // Refresh connected repos
+        await fetchDashboardData();
+        // Remove from available repos
+        setAvailableRepos(prev => prev.filter(r => r.full_name !== full_name));
+      }
+    } catch (error: any) {
+      console.error("Failed to connect repo:", error);
+      alert(error.response?.data?.message || "Failed to connect repository");
+    } finally {
+      setConnectingRepo(null);
+    }
+  };
+
+  const handleDialogOpen = (open: boolean) => {
+    setDialogOpen(open);
+    if (open && availableRepos.length === 0) {
+      fetchAvailableRepos();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Github className="w-8 h-8 text-blue-500" />
+            <span className="text-2xl font-bold">CodeAI Review</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link href="/dashboard" className="text-blue-400 font-semibold">
+              Dashboard
+            </Link>
+            <Button variant="outline" size="icon" className="cursor-pointer">
+              <Settings className="h-5 w-5 text-black cursor-pointer" />
+            </Button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 pt-24 pb-12">
+        <h1 className="text-4xl font-bold mb-8">Welcome, {username}!</h1>
+
+        {/* Connected Repos */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold mb-4">
+            Connected Repositories
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {connectedRepos.map((repo) => {
+              const [owner, name] = repo.repoName.split("/");
+              return (
+                <Card
+                  key={repo.id}
+                  className="bg-gray-800 border-gray-700 hover:border-blue-500 transition"
+                >
+                  <CardHeader>
+                    <CardTitle className="text-xl text-white">
+                      {repo.repoName}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-400">Active PRs: {repo.prCount}</p>
+                    <Button variant="outline" className="mt-4 w-full" asChild>
+                      <Link href={`/dashboard/repo/${repo.id}`}>
+                        View Details
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+            <Card className="bg-gray-800 border-dashed border-2 border-gray-600 flex items-center justify-center">
+              <CardContent>
+                <Dialog open={dialogOpen} onOpenChange={handleDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+                      <PlusCircle className="mr-2 h-5 w-5" />
+                      Connect New Repo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl text-white">
+                        Select a Repository
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="max-h-[60vh] overflow-y-auto">
+                      {reposLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                        </div>
+                      ) : availableRepos.length === 0 ? (
+                        <p className="text-center py-8 text-gray-400">
+                          No repositories available to connect
+                        </p>
+                      ) : (
+                        availableRepos.map((repo) => (
+                          <div
+                            key={repo.id}
+                            className="flex items-center justify-between p-4 border-b border-gray-700 hover:bg-gray-700 transition"
+                          >
+                            <div>
+                              <p className="font-semibold text-white">
+                                {repo.full_name}
+                              </p>
+                              <p className="text-sm text-gray-400">
+                                {repo.description || "No description"}
+                              </p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              className="bg-blue-600 hover:bg-blue-700 text-white border-none cursor-pointer"
+                              onClick={() => handleConnectRepo(repo.full_name)}
+                              disabled={connectingRepo === repo.full_name}
+                            >
+                              {connectingRepo === repo.full_name ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                "Connect"
+                              )}
+                            </Button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Recent PRs */}
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">Recent Pull Requests</h2>
+          <Card className="bg-gray-800 border-gray-700">
+            <CardContent className="p-0">
+              {prReviews.length === 0 ? (
+                <div className="p-8 text-center text-gray-400">
+                  No pull requests yet
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-700">
+                  {prReviews.map((pr) => (
+                    <div
+                      key={pr.id}
+                      className="flex items-center justify-between p-4 hover:bg-gray-700 transition"
+                    >
+                      <div className="flex items-center gap-4">
+                        <GitPullRequest className="h-6 w-6 text-blue-400" />
+                        <div>
+                          <p className="font-semibold text-white">
+                            PR #{pr.prNumber}
+                          </p>
+                          <p className="text-sm text-gray-400">{pr.repoName}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm">
+                          {pr.status === "reviewed" ? (
+                            <span className="flex items-center gap-1 text-green-500">
+                              <CheckCircle className="h-4 w-4" /> Reviewed
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-yellow-500">
+                              <AlertTriangle className="h-4 w-4" /> {pr.status}
+                            </span>
+                          )}
+                        </div>
+                        <Button variant="link" asChild className="text-blue-400">
+                          <Link href={`/dashboard/PR-review/${pr.id}`}>
+                            View Review
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+      </main>
+    </div>
+  );
+}

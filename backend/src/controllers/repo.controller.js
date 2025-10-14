@@ -97,3 +97,30 @@ export const connectRepo = async (req, res) => {
     });
   }
 };
+
+export const getConnectedRepos = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const repos = await prisma.repo.findMany({
+      where: { userId },
+      include: {
+        _count: {
+          select: { prs: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.status(200).json({
+      success: true,
+      repos: repos.map((repo) => ({
+        ...repo,
+        prCount: repo._count.prs,
+      })),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch connected repos" });
+  }
+};
