@@ -127,6 +127,7 @@ export default function DashboardClient() {
       if (response.success) {
         await fetchDashboardData();
         setAvailableRepos(prev => prev.filter(r => r.full_name !== full_name));
+        setDialogOpen(false);
       }
     } catch (error: any) {
       console.error("Failed to connect repo:", error);

@@ -23,6 +23,23 @@ const worker = new Worker(
 
     console.log("feedback: ", feedback);
 
+    // Check if feedback is empty or failed
+    const isFeedbackEmpty =
+      !feedback ||
+      (feedback.bugs.length === 0 &&
+        feedback.optimizations.length === 0 &&
+        feedback.security_issues.length === 0 &&
+        (!feedback.general_feedback || feedback.general_feedback.length === 0));
+
+    if (isFeedbackEmpty) {
+      console.error(
+        `❌ AI review failed or returned empty feedback for PR #${prNumber}. Skipping database save and comment.`
+      );
+      throw new Error(
+        "AI review failed - feedback is empty. This might be due to Qdrant connection issues or AI model errors."
+      );
+    }
+
     const repo = await prisma.repo.findFirst({
       where: { repoName: repoFullName },
     });
@@ -65,6 +82,7 @@ const worker = new Worker(
       console.error(
         `Error saving feedback for PR #${prNumber}: ${error.message}`
       );
+      throw error;
     }
 
     console.log(`✅ Feedback saved for PR #${prNumber}`);
@@ -104,6 +122,7 @@ const worker = new Worker(
       console.error(
         `Error posting AI review comment to PR #${prNumber}: ${error.message}`
       );
+      throw error;
     }
   },
   {
