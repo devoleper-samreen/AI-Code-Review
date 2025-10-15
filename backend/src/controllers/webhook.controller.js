@@ -1,5 +1,6 @@
 import { verifySignature } from "../utils/verifySignature.js";
 import { prQueue } from "../config/queues.js";
+import prisma from "../prisma/client.js";
 
 export const webhookPR = async (req, res) => {
   try {
@@ -27,6 +28,38 @@ export const webhookPR = async (req, res) => {
       action === "reopened" ||
       action === "synchronize"
     ) {
+      // Find the repo in database
+      const dbRepo = await prisma.repo.findFirst({
+        where: { repoName: repo.full_name },
+      });
+
+      if (dbRepo) {
+        // Create or update PR with "pending" status immediately
+        const existingPR = await prisma.pR.findFirst({
+          where: {
+            repoId: dbRepo.id,
+            prNumber: pr.number,
+          },
+        });
+
+        if (!existingPR) {
+          await prisma.pR.create({
+            data: {
+              repoId: dbRepo.id,
+              prNumber: pr.number,
+              status: "pending",
+            },
+          });
+          console.log(`✅ PR #${pr.number} created with status: pending`);
+        } else {
+          await prisma.pR.update({
+            where: { id: existingPR.id },
+            data: { status: "pending" },
+          });
+          console.log(`✅ PR #${pr.number} updated to status: pending`);
+        }
+      }
+
       await prQueue.add("review-pr", {
         repoFullName: repo.full_name, // "owner/repo"
         prNumber: pr.number,

@@ -19,6 +19,39 @@ const worker = new Worker(
     console.log(`🔍 Processing PR #${prNumber} from ${repoFullName}`);
     console.log("diff: ", diff);
 
+    // Find repo and PR first, update status to "processing"
+    const repo = await prisma.repo.findFirst({
+      where: { repoName: repoFullName },
+    });
+
+    if (!repo) {
+      throw new Error("Repo not found");
+    }
+
+    let pr = await prisma.pR.findFirst({
+      where: {
+        repoId: repo.id,
+        prNumber,
+      },
+    });
+
+    if (!pr) {
+      pr = await prisma.pR.create({
+        data: {
+          repoId: repo.id,
+          prNumber,
+          status: "processing",
+        },
+      });
+      console.log("✅ PR created with status: processing");
+    } else {
+      await prisma.pR.update({
+        where: { id: pr.id },
+        data: { status: "processing" },
+      });
+      console.log("✅ PR status updated to: processing");
+    }
+
     const feedback = await analyzeDiffWithContext(diff);
 
     console.log("feedback: ", feedback);
@@ -35,40 +68,14 @@ const worker = new Worker(
       console.error(
         `❌ AI review failed or returned empty feedback for PR #${prNumber}. Skipping database save and comment.`
       );
+      // Update PR status back to "pending" if feedback fails
+      await prisma.pR.update({
+        where: { id: pr.id },
+        data: { status: "pending" },
+      });
       throw new Error(
         "AI review failed - feedback is empty. This might be due to Qdrant connection issues or AI model errors."
       );
-    }
-
-    const repo = await prisma.repo.findFirst({
-      where: { repoName: repoFullName },
-    });
-
-    console.log("repo: ", repo);
-
-    if (!repo) {
-      throw new Error("Repo not found");
-    }
-
-    let pr = await prisma.pR.findFirst({
-      where: {
-        repoId: repo.id,
-        prNumber,
-      },
-    });
-
-    console.log("pr: ", pr);
-
-    if (!pr) {
-      pr = await prisma.pR.create({
-        data: {
-          repoId: repo.id,
-          prNumber,
-          status: "pending",
-        },
-      });
-
-      console.log("✅ PR created: ", pr);
     }
 
     try {
