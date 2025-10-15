@@ -107,9 +107,21 @@ Return JSON in this format:
     const result = await prReviewChain.call({ input: prompt, diff });
     const rawText = result.AIFeedback.replace(/```json|```/g, "").trim();
 
+    console.log("Raw AI Response:", rawText);
+
     let parsed;
     try {
-      parsed = FeedbackSchema.parse(JSON.parse(rawText));
+      const jsonResponse = JSON.parse(rawText);
+      console.log("Parsed JSON:", JSON.stringify(jsonResponse, null, 2));
+
+      // Normalize general_feedback if it's objects instead of strings
+      if (jsonResponse.general_feedback && Array.isArray(jsonResponse.general_feedback)) {
+        jsonResponse.general_feedback = jsonResponse.general_feedback.map(item =>
+          typeof item === 'string' ? item : (item.text || item.title || item.details || JSON.stringify(item))
+        );
+      }
+
+      parsed = FeedbackSchema.parse(jsonResponse);
     } catch (err) {
       console.error("Failed to parse AI response:", err);
       parsed = {
