@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
+    "start:prworker": "node src/worker/prWorker.js",
+    "start:embeddingworker": "node src/worker/embeddingWorker.js",
     "dev": "nodemon src/index.js",
     "dev:PRworker": "nodemon src/worker/prWorker.js",
     "dev:repoFetchingWorker": "nodemon src/worker/embeddingWorker.js"
