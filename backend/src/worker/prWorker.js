@@ -133,6 +133,9 @@ const worker = new Worker(
     }
   },
   {
-    connection: { host: "127.0.0.1", port: 6379 },
+    connection: {
+      url: process.env.REDIS_URL, // single Upstash URL
+      tls: {}, // required for rediss://
+    },
   }
 );

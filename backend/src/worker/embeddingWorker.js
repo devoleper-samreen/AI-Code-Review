@@ -8,6 +8,8 @@ import {
 import { qdrant } from "../config/vectorDB.js";
 import { randomUUID } from "crypto";
 import pLimit from "p-limit";
+console.log("redis url: ", process.env.REDIS_URL);
+
 
 const embeddingWorker = new Worker(
   "embedding-queue",
@@ -67,5 +69,10 @@ const embeddingWorker = new Worker(
       console.error("Error storing embeddings:", error);
     }
   },
-  { connection: { host: "127.0.0.1", port: 6379 } }
+  {
+    connection: {
+      url: process.env.REDIS_URL, // single Upstash URL
+      tls: {}, // required for rediss://
+    },
+  }
 );

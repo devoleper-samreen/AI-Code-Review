@@ -30,3 +30,6 @@ app.use("/analytics", analyticsRoute);
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
 });
+
+console.log("🔍 Using Redis URL:", process.env.REDIS_URL);
+
