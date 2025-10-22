@@ -22,14 +22,43 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { analyticsAPI, authAPI } from "@/services/api";
 
+interface UserInfo {
+  username: string;
+  githubId: number;
+  avatarUrl: string;
+  createdAt: string;
+}
+
+interface AnalyticsData {
+  overview: {
+    totalPRs: number;
+    reviewedPRs: number;
+    avgScore: number;
+    totalIssues: number;
+    activeRepos: number;
+  };
+  qualityTrend: Array<{ date: string; score: number }>;
+  issuesByType: { bugs: number; security: number; optimizations: number };
+  weeklyActivity: Array<{ week: string; count: number }>;
+  repoPerformance: Array<{ repo: string; avgScore: number }>;
+  recentActivity: Array<{
+    id: number;
+    prNumber: number;
+    repoName: string;
+    status: string;
+    createdAt: string;
+  }>;
+}
+
 export default function AnalyticsClient() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
     fetchAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAnalytics = async () => {
@@ -46,9 +75,10 @@ export default function AnalyticsClient() {
       if (userRes.success && userRes.user) {
         setUserInfo(userRes.user);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to fetch analytics:", error);
-      if (error.response?.status === 401) {
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status === 401) {
         router.push("/signup");
       }
     } finally {
@@ -218,7 +248,7 @@ export default function AnalyticsClient() {
                 <p className="text-gray-500 text-center py-8">No trend data available</p>
               ) : (
                 <div className="space-y-3">
-                  {qualityTrend.slice(-7).map((item: any, index: number) => (
+                  {qualityTrend.slice(-7).map((item, index: number) => (
                     <div key={index} className="flex items-center gap-3">
                       <span className="text-xs text-gray-600 w-24 truncate">{item.date}</span>
                       <div className="flex-1 bg-gray-100 rounded-full h-6 relative overflow-hidden">
@@ -328,8 +358,8 @@ export default function AnalyticsClient() {
                 <p className="text-gray-500 text-center py-8">No activity data available</p>
               ) : (
                 <div className="flex items-end justify-between h-48 gap-2">
-                  {weeklyActivity.slice(-8).map((item: any, index: number) => {
-                    const maxCount = Math.max(...weeklyActivity.map((w: any) => w.count));
+                  {weeklyActivity.slice(-8).map((item, index: number) => {
+                    const maxCount = Math.max(...weeklyActivity.map((w) => w.count));
                     const height = (item.count / maxCount) * 100;
                     return (
                       <div key={index} className="flex-1 flex flex-col items-center gap-2">
@@ -364,7 +394,7 @@ export default function AnalyticsClient() {
                 <p className="text-gray-500 text-center py-8">No repository data available</p>
               ) : (
                 <div className="space-y-3">
-                  {repoPerformance.map((repo: any, index: number) => (
+                  {repoPerformance.map((repo, index: number) => (
                     <div key={index} className="flex items-center gap-3">
                       <span className="text-sm font-medium text-gray-700 flex-1 truncate">
                         {repo.repo.split("/")[1]}
@@ -399,7 +429,7 @@ export default function AnalyticsClient() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-200">
-                  {recentActivity.map((pr: any) => (
+                  {recentActivity.map((pr) => (
                     <div
                       key={pr.id}
                       className="flex items-center justify-between p-5 hover:bg-gray-50 transition-colors"

@@ -27,10 +27,12 @@ import { repoAPI, prAPI, authAPI } from "@/services/api";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface ConnectedRepo {
-  id: string;
+  id: number;
   repoName: string;
-  prCount: number;
+  userId: number;
+  webhookId: number;
   createdAt: string;
+  prCount?: number;
 }
 
 interface AvailableRepo {
@@ -44,13 +46,25 @@ interface AvailableRepo {
   private: boolean;
 }
 
-interface PRReview {
-  id: string;
-  prNumber: number;
-  repoName: string;
-  status: string;
+interface UserInfo {
+  username: string;
+  githubId: number;
+  avatarUrl: string;
   createdAt: string;
-  feedback: any;
+}
+
+interface PRReview {
+  id: number;
+  prNumber: number;
+  prTitle?: string;
+  repoName: string;
+  author?: string;
+  status: string;
+  reviewData?: unknown;
+  createdAt: string;
+  feedback?: {
+    aiSuggestions?: Record<string, unknown>;
+  };
 }
 
 export default function DashboardClient() {
@@ -63,7 +77,7 @@ export default function DashboardClient() {
   const [reposLoading, setReposLoading] = useState(false);
   const [connectingRepo, setConnectingRepo] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -75,6 +89,7 @@ export default function DashboardClient() {
 
   useEffect(() => {
     fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchDashboardData = async () => {
@@ -91,9 +106,10 @@ export default function DashboardClient() {
       if (userRes.success && userRes.user) {
         setUserInfo(userRes.user);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
-      if (error.response?.status === 401) {
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status === 401) {
         router.push("/signup");
       }
     } finally {
@@ -129,9 +145,10 @@ export default function DashboardClient() {
         setAvailableRepos(prev => prev.filter(r => r.full_name !== full_name));
         setDialogOpen(false);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to connect repo:", error);
-      alert(error.response?.data?.message || "Failed to connect repository");
+      const err = error as { response?: { data?: { message?: string } } };
+      alert(err.response?.data?.message || "Failed to connect repository");
     } finally {
       setConnectingRepo(null);
     }
@@ -380,7 +397,7 @@ export default function DashboardClient() {
                   <GitPullRequest className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-600 font-medium">No pull requests yet</p>
                   <p className="text-gray-500 text-sm mt-2">
-                    Pull requests will appear here once they're created
+                    Pull requests will appear here once they&apos;re created
                   </p>
                 </div>
               ) : (

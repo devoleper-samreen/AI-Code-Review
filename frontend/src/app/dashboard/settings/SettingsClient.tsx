@@ -32,13 +32,21 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+interface UserInfo {
+  username: string;
+  githubId: number;
+  avatarUrl: string;
+  createdAt: string;
+}
+
 export default function SettingsClient() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
     fetchUserInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUserInfo = async () => {
@@ -48,9 +56,10 @@ export default function SettingsClient() {
       if (response.success && response.user) {
         setUserInfo(response.user);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to fetch user info:", error);
-      if (error.response?.status === 401) {
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status === 401) {
         router.push("/signup");
       }
     } finally {
@@ -68,7 +77,7 @@ export default function SettingsClient() {
       await authAPI.deleteAccount();
       localStorage.removeItem("token");
       router.push("/");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to delete account:", error);
       alert("Failed to delete account. Please try again.");
     }

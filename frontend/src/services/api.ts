@@ -27,8 +27,17 @@ export interface PRReview {
   repoName: string;
   author: string;
   status: string;
-  reviewData: any;
+  reviewData?: unknown;
   createdAt: string;
+  feedback?: {
+    aiSuggestions?: {
+      bugs?: Array<{ title: string; details: string; severity: string }>;
+      security_issues?: Array<{ title: string; details: string; severity: string }>;
+      optimizations?: Array<{ title: string; details: string }>;
+      general_feedback?: string[];
+      summary?: string;
+    };
+  };
 }
 
 // Auth APIs
