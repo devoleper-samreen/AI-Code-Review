@@ -42,20 +42,33 @@ interface Props {
 }
 
 interface RepoData {
-  id: string;
+  id: number;
   repoName: string;
+  userId: number;
   webhookId: number;
   createdAt: string;
-  prCount: number;
+  prCount?: number;
+}
+
+interface UserInfo {
+  username: string;
+  githubId: number;
+  avatarUrl: string;
+  createdAt: string;
 }
 
 interface PRReview {
-  id: string;
+  id: number;
   prNumber: number;
   repoName: string;
   status: string;
   createdAt: string;
-  feedback: any;
+  feedback?: {
+    aiSuggestions?: {
+      bugs?: Array<{ severity: string }>;
+      security_issues?: Array<{ severity: string }>;
+    };
+  };
 }
 
 export default function RepoDetailClient({ id }: Props) {
@@ -66,7 +79,7 @@ export default function RepoDetailClient({ id }: Props) {
   const [repoData, setRepoData] = useState<RepoData | null>(null);
   const [prReviews, setPRReviews] = useState<PRReview[]>([]);
   const [filteredPRs, setFilteredPRs] = useState<PRReview[]>([]);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date-desc");
   const [stats, setStats] = useState({
@@ -78,10 +91,12 @@ export default function RepoDetailClient({ id }: Props) {
 
   useEffect(() => {
     fetchRepoData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
     applyFiltersAndSort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prReviews, filterStatus, sortBy]);
 
   const fetchRepoData = async (isRefresh = false) => {
@@ -111,34 +126,32 @@ export default function RepoDetailClient({ id }: Props) {
 
       // Get PR reviews for this repo
       const repoReviews = prReviewsRes.reviews.filter(
-        (pr: any) => pr.repoName === repoRes.repo.repoName
+        (pr) => pr.repoName === repoRes.repo.repoName
       );
 
       setPRReviews(repoReviews);
 
       // Calculate stats
       const total = repoReviews.length;
-      const reviewed = repoReviews.filter((pr: any) => pr.status === "reviewed").length;
+      const reviewed = repoReviews.filter((pr) => pr.status === "reviewed").length;
       const pending = total - reviewed;
 
       // Calculate average score from feedbacks
       let totalScore = 0;
       let scoredReviews = 0;
-      repoReviews.forEach((pr: any) => {
+      repoReviews.forEach((pr) => {
         if (pr.feedback?.aiSuggestions) {
           const feedback = pr.feedback.aiSuggestions;
-          const bugs = feedback.bugs?.length || 0;
-          const security = feedback.security_issues?.length || 0;
           let score = 100;
 
-          feedback.bugs?.forEach((bug: any) => {
+          feedback.bugs?.forEach((bug) => {
             if (bug.severity === 'critical') score -= 20;
             else if (bug.severity === 'high') score -= 10;
             else if (bug.severity === 'medium') score -= 5;
             else score -= 2;
           });
 
-          feedback.security_issues?.forEach((issue: any) => {
+          feedback.security_issues?.forEach((issue) => {
             if (issue.severity === 'high') score -= 15;
             else if (issue.severity === 'medium') score -= 8;
             else score -= 3;
@@ -152,9 +165,10 @@ export default function RepoDetailClient({ id }: Props) {
       const avgScore = scoredReviews > 0 ? Math.round(totalScore / scoredReviews) : 0;
 
       setStats({ total, reviewed, pending, avgScore });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to fetch repo data:", error);
-      if (error.response?.status === 401) {
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status === 401) {
         router.push("/signup");
       }
     } finally {
@@ -168,7 +182,7 @@ export default function RepoDetailClient({ id }: Props) {
       setDisconnecting(true);
       await repoAPI.disconnectRepo(id);
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to disconnect repo:", error);
       alert("Failed to disconnect repository. Please try again.");
     } finally {
@@ -554,7 +568,7 @@ export default function RepoDetailClient({ id }: Props) {
                     No pull requests yet
                   </h3>
                   <p className="text-gray-600 mb-6">
-                    Pull requests will appear here once they're created in this repository
+                    Pull requests will appear here once they&apos;re created in this repository
                   </p>
                   <Button
                     className="bg-blue-600 hover:bg-blue-700 text-white"

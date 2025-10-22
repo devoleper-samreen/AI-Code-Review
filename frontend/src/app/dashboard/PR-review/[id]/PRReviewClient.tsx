@@ -31,14 +31,39 @@ interface Props {
   id: string;
 }
 
+interface UserInfo {
+  username: string;
+  githubId: number;
+  avatarUrl: string;
+  createdAt: string;
+}
+
+interface Feedback {
+  bugs?: Array<{ title: string; details: string; severity: string }>;
+  optimizations?: Array<{ title: string; details: string }>;
+  security_issues?: Array<{ title: string; details: string; severity: string }>;
+  general_feedback?: string[];
+  summary?: string;
+}
+
+interface PRData {
+  id: number;
+  prNumber: number;
+  repoName: string;
+  status: string;
+  createdAt: string;
+  feedbacks?: Array<{ aiSuggestions?: Feedback }>;
+}
+
 export default function PRReviewClient({ id }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [prData, setPRData] = useState<any>(null);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [prData, setPRData] = useState<PRData | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
     fetchPRReview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchPRReview = async () => {
@@ -52,11 +77,12 @@ export default function PRReviewClient({ id }: Props) {
       if (userRes.success && userRes.user) {
         setUserInfo(userRes.user);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to fetch PR review:", error);
-      if (error.response?.status === 401) {
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status === 401) {
         router.push("/signup");
-      } else if (error.response?.status === 404) {
+      } else if (err.response?.status === 404) {
         router.push("/dashboard");
       }
     } finally {
@@ -115,13 +141,13 @@ export default function PRReviewClient({ id }: Props) {
     if (!prData.feedbacks?.[0]) return 0;
 
     let score = 100;
-    bugs.forEach((bug: any) => {
+    bugs.forEach((bug) => {
       if (bug.severity === 'critical') score -= 20;
       else if (bug.severity === 'high') score -= 10;
       else if (bug.severity === 'medium') score -= 5;
       else score -= 2;
     });
-    securityIssues.forEach((issue: any) => {
+    securityIssues.forEach((issue) => {
       if (issue.severity === 'high') score -= 15;
       else if (issue.severity === 'medium') score -= 8;
       else score -= 3;
@@ -261,7 +287,7 @@ export default function PRReviewClient({ id }: Props) {
               Bugs Detected
             </h2>
             <Accordion type="single" collapsible className="space-y-3">
-              {bugs.map((bug: any, index: number) => (
+              {bugs.map((bug, index: number) => (
                 <AccordionItem
                   key={index}
                   value={`bug-${index}`}
@@ -308,7 +334,7 @@ export default function PRReviewClient({ id }: Props) {
               Security Issues
             </h2>
             <Accordion type="single" collapsible className="space-y-3">
-              {securityIssues.map((issue: any, index: number) => (
+              {securityIssues.map((issue, index: number) => (
                 <AccordionItem
                   key={index}
                   value={`security-${index}`}
@@ -352,7 +378,7 @@ export default function PRReviewClient({ id }: Props) {
               Optimization Suggestions
             </h2>
             <Accordion type="single" collapsible className="space-y-3">
-              {optimizations.map((opt: any, index: number) => (
+              {optimizations.map((opt, index: number) => (
                 <AccordionItem
                   key={index}
                   value={`opt-${index}`}

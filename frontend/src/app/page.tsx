@@ -249,7 +249,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">Connect GitHub</h3>
               <p className="text-gray-600 leading-relaxed">
-                Authenticate with GitHub OAuth in one click. We'll sync your
+                Authenticate with GitHub OAuth in one click. We&apos;ll sync your
                 repositories automatically.
               </p>
             </div>
