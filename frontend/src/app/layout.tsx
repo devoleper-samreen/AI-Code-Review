@@ -12,6 +12,12 @@ export const metadata: Metadata = {
   title: "CodeReviewHub - AI-Powered Code Review Platform",
   description: "Automate code reviews with AI. Get instant feedback on pull requests, catch bugs early, and maintain code quality across your team.",
   keywords: ["code review", "AI", "GitHub", "pull requests", "automation", "code quality"],
+  // icons: {
+  //   icon: [
+  //     { url: '/favicon.ico' },
+  //     { url: '/favicon.svg', type: 'image/svg+xml' },
+  //   ],
+  // },
 };
 
 export default function RootLayout({

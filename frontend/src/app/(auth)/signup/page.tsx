@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function LoginPage() {
   const handleGitHubLogin = async () => {
-    window.location.href = "http://localhost:8000/auth/github";
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/github`;
   };
 
   return (
