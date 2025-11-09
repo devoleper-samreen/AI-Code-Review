@@ -33,3 +33,17 @@ app.listen(PORT, () => {
 
 console.log("🔍 Using Redis URL:", process.env.REDIS_URL);
 
+// Initialize BullMQ Workers
+console.log('🔧 Initializing BullMQ workers...');
+import('./worker/prWorker.js').then(() => {
+  console.log('✅ PR Worker loaded and running');
+}).catch(err => {
+  console.error('❌ Error loading PR Worker:', err);
+});
+
+import('./worker/embeddingWorker.js').then(() => {
+  console.log('✅ Embedding Worker loaded and running');
+}).catch(err => {
+  console.error('❌ Error loading Embedding Worker:', err);
+});
+
