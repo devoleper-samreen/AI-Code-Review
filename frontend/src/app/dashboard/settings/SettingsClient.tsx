@@ -17,6 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { authAPI } from "@/services/api";
 import DashboardNavbar from "@/components/DashboardNavbar";
@@ -165,10 +166,12 @@ export default function SettingsClient() {
                     <User className="w-5 h-5 text-gray-500" />
                     <span className="text-gray-600 font-medium">Avatar</span>
                   </div>
-                  <img
+                  <Image
                     src={userInfo.avatarUrl}
                     alt="GitHub Avatar"
-                    className="w-10 h-10 rounded-full border-2 border-gray-200"
+                    width={40}
+                    height={40}
+                    className="rounded-full border-2 border-gray-200"
                   />
                 </div>
               )}

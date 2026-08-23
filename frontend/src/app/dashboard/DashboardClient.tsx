@@ -17,7 +17,6 @@ import {
   AlertTriangle,
   PlusCircle,
   Loader2,
-  Code,
   Calendar,
   TrendingUp,
   Activity,

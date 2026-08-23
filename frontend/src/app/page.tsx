@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/accordion";
 import {
   Github, Code, CheckCircle, AlertTriangle, Zap, Star, Users, Shield,
-  ArrowRight, Sparkles, Lock, TrendingUp, Clock, Award, Check, X,
-  GitBranch, FileCode, Bug, Rocket, Building2, BarChart3, Globe
+  ArrowRight, Sparkles, Lock, Award, Check, X,
+  GitBranch, Rocket, Building2, BarChart3, Globe
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -688,10 +689,12 @@ export default function Home() {
                   &quot;{testimonial.content}&quot;
                 </p>
                 <div className="flex items-center gap-3">
-                  <img
+                  <Image
                     src={testimonial.image}
                     alt={testimonial.name}
-                    className="w-10 h-10 rounded-full"
+                    width={40}
+                    height={40}
+                    className="rounded-full"
                   />
                   <div>
                     <div className="text-sm font-bold text-gray-900">{testimonial.name}</div>

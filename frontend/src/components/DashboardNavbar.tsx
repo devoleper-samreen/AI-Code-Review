@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Code, Settings } from "lucide-react";
 
@@ -35,10 +36,12 @@ export default function DashboardNavbar({ avatarUrl }: Props) {
           </Link>
           {avatarUrl ? (
             <Link href="/dashboard/settings" title="Settings">
-              <img
+              <Image
                 src={avatarUrl}
                 alt="User Avatar"
-                className="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-blue-500 transition-colors cursor-pointer"
+                width={40}
+                height={40}
+                className="rounded-full border-2 border-gray-200 hover:border-blue-500 transition-colors cursor-pointer"
               />
             </Link>
           ) : (
