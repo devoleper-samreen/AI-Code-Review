@@ -9,7 +9,6 @@ import {
   CheckCircle,
   AlertTriangle,
   Loader2,
-  Code,
   ArrowLeft,
   Calendar,
   Activity,
@@ -24,7 +23,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import DashboardNavbar from "@/components/DashboardNavbar";
 import { repoAPI, prAPI, authAPI } from "@/services/api";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -184,7 +185,7 @@ export default function RepoDetailClient({ id }: Props) {
       router.push("/dashboard");
     } catch (error) {
       console.error("Failed to disconnect repo:", error);
-      alert("Failed to disconnect repository. Please try again.");
+      toast.error("Failed to disconnect repository. Please try again.");
     } finally {
       setDisconnecting(false);
     }
@@ -253,31 +254,7 @@ export default function RepoDetailClient({ id }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-xl">
-              <Code className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">CodeReviewHub</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-gray-700 hover:text-gray-900 font-medium transition">
-              Dashboard
-            </Link>
-            {userInfo?.avatarUrl && (
-              <Link href="/dashboard/settings" title="Settings">
-                <img
-                  src={userInfo.avatarUrl}
-                  alt="User Avatar"
-                  className="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-blue-500 transition-colors cursor-pointer"
-                />
-              </Link>
-            )}
-          </div>
-        </div>
-      </nav>
+      <DashboardNavbar avatarUrl={userInfo?.avatarUrl} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-10">
@@ -312,7 +289,7 @@ export default function RepoDetailClient({ id }: Props) {
                 </div>
               </div>
             </div>
-            <div>
+            <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 className="border-gray-300 hover:border-gray-400"

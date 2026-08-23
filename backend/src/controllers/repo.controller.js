@@ -1,6 +1,6 @@
 import prisma from "../prisma/client.js";
 import axios from "axios";
-import { embeddingQueue } from "../config/queues.js";
+import { processEmbeddings } from "../utils/processEmbeddings.js";
 export const getRepos = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -43,6 +43,14 @@ export const connectRepo = async (req, res) => {
       });
     }
 
+    // Check if repo is already connected
+    const existingRepo = await prisma.repo.findFirst({
+      where: { userId, repoName: repo },
+    });
+    if (existingRepo) {
+      return res.status(409).json({ success: false, message: "Repository already connected" });
+    }
+
     const [owner, repoName] = repo.split("/");
 
     //create webhook on github on this repo
@@ -75,14 +83,14 @@ export const connectRepo = async (req, res) => {
       },
     });
 
-    // Enqueue background job for embeddings
-    embeddingQueue.add("generate-embeddings", {
+    // Process embeddings in background
+    processEmbeddings({
       repoId: savedRepo.id,
       repoName: full_name,
       userId,
-    });
+    }).catch((err) => console.error(`❌ Embedding failed: ${err.message}`));
 
-    console.log("saved repo and enqueued processing...: ", savedRepo);
+    console.log("saved repo and started embedding processing...: ", savedRepo);
 
     return res.status(200).json({
       success: true,

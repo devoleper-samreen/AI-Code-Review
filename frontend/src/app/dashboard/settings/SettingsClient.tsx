@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Settings,
-  Code,
   User,
   LogOut,
   Github,
@@ -20,6 +19,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authAPI } from "@/services/api";
+import DashboardNavbar from "@/components/DashboardNavbar";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,7 +80,7 @@ export default function SettingsClient() {
       router.push("/");
     } catch (error) {
       console.error("Failed to delete account:", error);
-      alert("Failed to delete account. Please try again.");
+      toast.error("Failed to delete account. Please try again.");
     }
   };
 
@@ -113,25 +114,7 @@ export default function SettingsClient() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-xl">
-              <Code className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">CodeReviewHub</span>
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-gray-700 hover:text-gray-900 font-medium transition">
-              Dashboard
-            </Link>
-            <Button variant="outline" size="icon" className="border-blue-500 bg-blue-50">
-              <Settings className="h-5 w-5 text-blue-600" />
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <DashboardNavbar avatarUrl={userInfo?.avatarUrl} />
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-10">
@@ -277,6 +260,34 @@ export default function SettingsClient() {
           </Card>
         </section>
 
+        {/* Account Section */}
+        <section className="mb-8">
+          <Card className="bg-white border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-xl text-gray-900 flex items-center gap-2">
+                <LogOut className="w-5 h-5" />
+                Account
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between py-3">
+                <div>
+                  <p className="text-gray-900 font-medium">Sign Out</p>
+                  <p className="text-sm text-gray-600 mt-1">Sign out of your account</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleLogout}
+                  className="border-gray-300 hover:border-gray-400 text-gray-700"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
         {/* Danger Zone */}
         <section>
           <Card className="bg-white border-red-200 shadow-sm">
@@ -290,22 +301,6 @@ export default function SettingsClient() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                <div>
-                  <p className="text-gray-900 font-medium">Logout</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Sign out of your account
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={handleLogout}
-                  className="border-gray-300 hover:border-gray-400 text-gray-700"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </Button>
-              </div>
               <div className="flex items-center justify-between py-3">
                 <div>
                   <p className="text-gray-900 font-medium">Delete Account</p>

@@ -24,7 +24,7 @@ export default function LoginPage() {
               <Code className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">
-              CodeReviewHub
+              PR Reviewer
             </span>
           </Link>
 
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 <Code className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">
-                CodeReviewHub
+                PR Reviewer
               </span>
             </Link>
           </div>
@@ -149,7 +149,7 @@ export default function LoginPage() {
 
           <div className="mt-6 pt-5 border-t border-gray-200 text-center">
             <p className="text-xs text-gray-600">
-              New to CodeReviewHub?{" "}
+              New to PR Reviewer?{" "}
               <Link href="/" className="text-blue-600 hover:text-blue-700 font-semibold">
                 Learn more
               </Link>

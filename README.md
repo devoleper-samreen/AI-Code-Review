@@ -1,4 +1,4 @@
-# AI Code Review
+# PR Reviewer
 
 An intelligent code review platform that uses **Google Gemini AI** to automatically analyze pull requests and provide smart feedback on bugs, security issues, and code quality improvements.
 
@@ -12,7 +12,7 @@ Manual code reviews are time-consuming and can miss critical issues. Developers 
 
 ## 💡 Solution
 
-AI Code Review automates the code review process by:
+PR Reviewer automates the code review process by:
 - Analyzing pull requests using AI and vector embeddings for context
 - Detecting bugs, security issues, and performance problems
 - Providing actionable feedback directly on GitHub PRs

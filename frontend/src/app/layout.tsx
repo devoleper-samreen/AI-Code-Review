@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -9,15 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CodeReviewHub - AI-Powered Code Review Platform",
+  title: "PR Reviewer - AI Powered Code Reviews",
   description: "Automate code reviews with AI. Get instant feedback on pull requests, catch bugs early, and maintain code quality across your team.",
   keywords: ["code review", "AI", "GitHub", "pull requests", "automation", "code quality"],
-  // icons: {
-  //   icon: [
-  //     { url: '/favicon.ico' },
-  //     { url: '/favicon.svg', type: 'image/svg+xml' },
-  //   ],
-  // },
 };
 
 export default function RootLayout({
@@ -29,6 +24,7 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="antialiased font-sans">
         {children}
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

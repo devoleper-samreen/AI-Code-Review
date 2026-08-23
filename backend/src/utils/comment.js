@@ -1,5 +1,5 @@
 export function formatFeedbackForComment(feedback) {
-  let comment = `## 🤖 AI Code Review Feedback\n\n`;
+  let comment = `## 🤖 PR Reviewer Feedback\n\n`;
 
   // 🔴 Bugs
   if (feedback.bugs?.length) {
@@ -27,7 +27,7 @@ export function formatFeedbackForComment(feedback) {
   if (feedback.security_issues?.length) {
     comment += `### 🔒 Security Issues\n`;
     feedback.security_issues.forEach((sec) => {
-      comment += `- ${sec}\n`;
+      comment += `- **${sec.title}** _(Severity: ${sec.severity})_\n  ${sec.details}\n`;
     });
     comment += `\n`;
   } else {

@@ -1,6 +1,6 @@
 import { verifySignature } from "../utils/verifySignature.js";
-import { prQueue } from "../config/queues.js";
 import prisma from "../prisma/client.js";
+import { processPR } from "../utils/processPR.js";
 
 export const webhookPR = async (req, res) => {
   try {
@@ -28,27 +28,18 @@ export const webhookPR = async (req, res) => {
       action === "reopened" ||
       action === "synchronize"
     ) {
-      // Find the repo in database
       const dbRepo = await prisma.repo.findFirst({
         where: { repoName: repo.full_name },
       });
 
       if (dbRepo) {
-        // Create or update PR with "pending" status immediately
         const existingPR = await prisma.pR.findFirst({
-          where: {
-            repoId: dbRepo.id,
-            prNumber: pr.number,
-          },
+          where: { repoId: dbRepo.id, prNumber: pr.number },
         });
 
         if (!existingPR) {
           await prisma.pR.create({
-            data: {
-              repoId: dbRepo.id,
-              prNumber: pr.number,
-              status: "pending",
-            },
+            data: { repoId: dbRepo.id, prNumber: pr.number, status: "pending" },
           });
           console.log(`✅ PR #${pr.number} created with status: pending`);
         } else {
@@ -60,15 +51,14 @@ export const webhookPR = async (req, res) => {
         }
       }
 
-      await prQueue.add("review-pr", {
-        repoFullName: repo.full_name, // "owner/repo"
+      // Process in background — respond to GitHub immediately
+      processPR({
+        repoFullName: repo.full_name,
         prNumber: pr.number,
-        prUrl: pr.url,
         diffUrl: pr.diff_url,
-        installationId: payload.installation?.id,
-      });
+      }).catch((err) => console.error(`❌ PR processing failed: ${err.message}`));
 
-      console.log("Event received and queued for processing");
+      console.log("Event received, processing started in background");
     }
 
     res.status(200).send("Event received");

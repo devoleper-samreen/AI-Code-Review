@@ -8,8 +8,7 @@ import webhookRoute from "./routes/webhook.route.js";
 import prRoute from "./routes/pr.route.js";
 import analyticsRoute from "./routes/analytics.route.js";
 
-
-dotenv.config()
+dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -17,6 +16,12 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:3000",
   credentials: true,
 }));
+
+// Bypass localtunnel visitor confirmation page
+app.use((req, res, next) => {
+  res.setHeader("bypass-tunnel-reminder", "true");
+  next();
+});
 app.use(passport.initialize());
 
 app.use("/github", express.raw({ type: "application/json" }), webhookRoute);
@@ -30,20 +35,3 @@ app.use("/analytics", analyticsRoute);
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
 });
-
-console.log("🔍 Using Redis URL:", process.env.REDIS_URL);
-
-// Initialize BullMQ Workers
-console.log('🔧 Initializing BullMQ workers...');
-import('./worker/prWorker.js').then(() => {
-  console.log('✅ PR Worker loaded and running');
-}).catch(err => {
-  console.error('❌ Error loading PR Worker:', err);
-});
-
-import('./worker/embeddingWorker.js').then(() => {
-  console.log('✅ Embedding Worker loaded and running');
-}).catch(err => {
-  console.error('❌ Error loading Embedding Worker:', err);
-});
-

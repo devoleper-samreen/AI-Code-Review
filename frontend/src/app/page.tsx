@@ -92,7 +92,7 @@ export default function Home() {
       name: "Priya Sharma",
       role: "Engineering Lead at TechCorp",
       image: "https://ui-avatars.com/api/?name=Priya+Sharma&background=6366f1&color=fff&size=128&font-size=0.5&bold=true",
-      content: "CodeReviewHub has transformed our code review process. We catch bugs 3x faster and our code quality has improved significantly. The AI suggestions are incredibly accurate!",
+      content: "PR Reviewer has transformed our code review process. We catch bugs 3x faster and our code quality has improved significantly. The AI suggestions are incredibly accurate!",
       rating: 5,
     },
     {
@@ -148,7 +148,7 @@ export default function Home() {
               <Code className="w-4 h-4 text-white" />
             </div>
             <span className="text-lg font-bold text-gray-900">
-              CodeReviewHub
+              PR Reviewer
             </span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
@@ -270,7 +270,7 @@ export default function Home() {
                     <div className="w-3 h-3 rounded-full bg-green-400"></div>
                   </div>
                   <div className="flex-1 text-center text-xs font-medium text-gray-600">
-                    AI Code Review - Pull Request #1234
+                    PR Reviewer - Pull Request #1234
                   </div>
                 </div>
 
@@ -669,7 +669,7 @@ export default function Home() {
               Loved by Developers Worldwide
             </h2>
             <p className="text-base text-gray-600">
-              See what our customers have to say about CodeReviewHub
+              See what our customers have to say about PR Reviewer
             </p>
           </div>
 
@@ -715,7 +715,7 @@ export default function Home() {
               Frequently Asked Questions
             </h2>
             <p className="text-base text-gray-600">
-              Everything you need to know about CodeReviewHub
+              Everything you need to know about PR Reviewer
             </p>
           </div>
 
@@ -782,7 +782,7 @@ export default function Home() {
                 <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-1.5 rounded-lg">
                   <Code className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-bold text-white">CodeReviewHub</span>
+                <span className="text-lg font-bold text-white">PR Reviewer</span>
               </div>
               <p className="text-gray-400 text-xs mb-4 max-w-sm">
                 AI-powered code review platform for modern development teams.
@@ -830,7 +830,7 @@ export default function Home() {
 
           <div className="border-t border-gray-800 pt-6 text-center">
             <p className="text-gray-400 text-xs">
-              &copy; 2026 CodeReviewHub. All rights reserved.
+              &copy; 2026 PR Reviewer. All rights reserved.
             </p>
           </div>
         </div>
